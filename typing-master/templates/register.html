@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- 设置视口，适配移动设备 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Typing Master</title>
+    <!-- 引入CSS样式文件，使用url_for生成静态文件路径 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="auth-container">
+        <h2>? Register</h2>
+        <!-- 如果有错误信息，显示错误 -->
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        <!-- 注册表单，POST方法提交 -->
+        <form method="POST">
+            <div class="form-group">
+                <label>Username</label>
+                <!-- 用户名输入框，必填 -->
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <!-- 密码输入框，必填 -->
+                <input type="password" name="password" required>
+            </div>
+            <!-- 注册按钮，宽度100% -->
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+        </form>
+        <!-- 登录链接 -->
+        <div class="auth-link">
+            Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+        </div>
+    </div>
+</body>
+</html>

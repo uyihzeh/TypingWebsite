@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- 设置视口，适配移动设备 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Master - Lowercase Only</title>
+    <!-- 引入CSS样式文件，使用url_for生成静态文件路径 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <div class="header">
+            <h1>Typing Master</h1>
+            <div class="user-info">
+                <!-- 显示当前登录用户名，使用Flask-Login的current_user -->
+                <span>Welcome, {{ current_user.username }}</span>
+                <!-- 登出链接 -->
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+
+        <!-- 测试时长选择区域 -->
+        <div class="settings">
+            <!-- 1分钟按钮，默认激活，data-duration存储秒数 -->
+            <button class="duration-btn active" data-duration="60">1 Minute</button>
+            <!-- 2分钟按钮 -->
+            <button class="duration-btn" data-duration="120">2 Minutes</button>
+            <!-- 3分钟按钮 -->
+            <button class="duration-btn" data-duration="180">3 Minutes</button>
+            <!-- 5分钟按钮 -->
+            <button class="duration-btn" data-duration="300">5 Minutes</button>
+        </div>
+
+        <!-- 统计数据显示区域 -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">WPM</div>
+                <!-- WPM数值显示 -->
+                <div class="stat-value" id="wpm">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Accuracy</div>
+                <!-- 准确率显示 -->
+                <div class="stat-value" id="accuracy">100%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Time Left</div>
+                <!-- 剩余时间显示 -->
+                <div class="stat-value" id="time-left">1:00</div>
+            </div>
+        </div>
+
+        <!-- 待输入文本显示区域 -->
+        <div class="text-display" id="text-display"></div>
+        <!-- 输入框，初始禁用 -->
+        <textarea class="input-area" id="input-area" placeholder="Click Start to begin..." disabled></textarea>
+
+        <!-- 控制按钮区域 -->
+        <div class="controls">
+            <!-- 开始按钮 -->
+            <button class="btn btn-primary" id="start-btn">Start Test</button>
+            <!-- 重置按钮，初始禁用 -->
+            <button class="btn btn-secondary" id="reset-btn" disabled>Reset</button>
+        </div>
+
+        <!-- 历史记录区域 -->
+        <div class="history-section">
+            <h3>Recent History</h3>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Duration</th>
+                        <th>WPM</th>
+                        <th>Accuracy</th>
+                    </tr>
+                </thead>
+                <!-- 历史记录表格主体，JavaScript动态填充 -->
+                <tbody id="history-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 测试完成结果弹窗 -->
+    <div class="modal" id="result-modal">
+        <div class="modal-content">
+            <h2>Test Complete!</h2>
+            <div class="modal-stats">
+                <!-- 最终WPM显示 -->
+                <div class="modal-stat">WPM: <span id="final-wpm">0</span></div>
+                <!-- 最终准确率显示 -->
+                <div class="modal-stat">Accuracy: <span id="final-accuracy">0%</span></div>
+            </div>
+            <!-- 关闭弹窗按钮 -->
+            <button class="btn btn-primary" id="close-modal">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局变量声明 ====================
+        let testText = '';              // 存储待输入的纯小写随机文本
+        let currentIndex = 0;           // 当前输入到的字符位置
+        let startTime = null;           // 测试开始时间戳
+        let timerInterval = null;       // 定时器ID
+        let isRunning = false;          // 测试是否正在进行
+        let selectedDuration = 60;      // 选中的测试时长（秒），默认1分钟
+        let timeRemaining = selectedDuration; // 剩余时间
+        let totalChars = 0;             // 已输入的总字符数
+        let correctChars = 0;           // 正确输入的字符数
+
+        // ==================== DOM元素获取 ====================
+        const textDisplay = document.getElementById('text-display');       // 文本显示区域
+        const inputArea = document.getElementById('input-area');           // 输入框
+        const startBtn = document.getElementById('start-btn');             // 开始按钮
+        const resetBtn = document.getElementById('reset-btn');             // 重置按钮
+        const wpmElement = document.getElementById('wpm');                 // WPM显示元素
+        const accuracyElement = document.getElementById('accuracy');       // 准确率显示元素
+        const timeLeftElement = document.getElementById('time-left');       // 剩余时间显示元素
+        const durationBtns = document.querySelectorAll('.duration-btn');   // 所有时长选择按钮
+        const resultModal = document.getElementById('result-modal');       // 结果弹窗
+        const finalWpm = document.getElementById('final-wpm');             // 最终WPM显示
+        const finalAccuracy = document.getElementById('final-accuracy');   // 最终准确率显示
+        const closeModal = document.getElementById('close-modal');         // 关闭弹窗按钮
+        const historyBody = document.getElementById('history-body');       // 历史记录表格主体
+
+        // ==================== 核心函数定义 ====================
+        
+        // 生成指定长度的纯小写英文字母随机字符串
+        function generateRandomText(length) {
+            // 定义仅包含26个小写英文字母的字符串
+            const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+            let result = '';  // 存储生成的结果
+            // 循环length次，每次随机选择一个字母
+            for (let i = 0; i < length; i++) {
+                result += lowercaseLetters.charAt(Math.floor(Math.random() * lowercaseLetters.length));
+            }
+            return result;  // 返回生成的纯小写随机字符串
+        }
+
+        // 渲染待输入文本，带颜色标记（正确/错误/当前）
+        function renderText() {
+            textDisplay.innerHTML = '';  // 清空文本显示区域
+            // 遍历每个字符
+            for (let i = 0; i < testText.length; i++) {
+                const charSpan = document.createElement('span');  // 创建span元素包裹单个字符
+                charSpan.className = 'char';  // 设置基础类名
+                charSpan.textContent = testText[i];  // 设置字符内容
+                
+                // 如果是已输入的字符
+                if (i < currentIndex) {
+                    // 判断输入的字符是否正确，添加对应的类
+                    charSpan.classList.add(inputArea.value[i] === testText[i] ? 'correct' : 'incorrect');
+                } 
+                // 如果是当前待输入的字符
+                else if (i === currentIndex) {
+                    charSpan.classList.add('current');  // 添加当前字符类
+                }
+                
+                textDisplay.appendChild(charSpan);  // 将span添加到文本显示区域
+            }
+        }
+
+        // 格式化时间，将秒数转换为"分:秒"格式
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);  // 计算分钟数
+            const secs = seconds % 60;               // 计算秒数
+            // 返回格式化的字符串，秒数不足两位时补0
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 更新统计数据（WPM、准确率、剩余时间）
+        function updateStats() {
+            if (!isRunning) return;  // 如果测试未运行，直接返回
+
+            // 计算已用时间（转换为分钟）
+            const elapsedTime = (Date.now() - startTime) / 1000 / 60;
+            const typedText = inputArea.value;  // 获取已输入的文本
+            
+            // 计算正确输入的字符数
+            correctChars = 0;  // 重置正确字符数
+            for (let i = 0; i < typedText.length; i++) {
+                // 如果输入的字符与目标字符相同
+                if (typedText[i] === testText[i]) {
+                    correctChars++;  // 正确字符数加1
+                }
+            }
+            totalChars = typedText.length;  // 更新总字符数
+
+            // 计算WPM（每分钟击键数）
+            const wpm = elapsedTime > 0 ? Math.round(totalChars / elapsedTime) : 0;
+            
+            // 计算准确率（0-100之间）
+            const accuracy = totalChars > 0 ? (correctChars / totalChars) * 100 : 100;
+
+            // 更新页面上的统计数据显示
+            wpmElement.textContent = wpm;  // 更新WPM
+            accuracyElement.textContent = `${Math.round(accuracy)}%`;  // 更新准确率（取整）
+            timeLeftElement.textContent = formatTime(timeRemaining);  // 更新剩余时间
+        }
+
+        // 开始测试
+        function startTest() {
+            // 生成200个纯小写英文字母作为测试文本
+            testText = generateRandomText(200);
+            currentIndex = 0;           // 重置当前输入位置
+            totalChars = 0;              // 重置总字符数
+            correctChars = 0;            // 重置正确字符数
+            timeRemaining = selectedDuration;  // 设置剩余时间为选中的时长
+            
+            // 重置UI界面
+            renderText();  // 渲染新的测试文本
+            inputArea.value = '';  // 清空输入框
+            inputArea.disabled = false;  // 启用输入框
+            inputArea.focus();  // 让输入框自动获取焦点
+            startBtn.disabled = true;  // 禁用开始按钮
+            resetBtn.disabled = false;  // 启用重置按钮
+            
+            // 开始计时
+            startTime = Date.now();  // 记录当前时间戳作为开始时间
+            isRunning = true;  // 设置测试状态为运行中
+            
+            // 启动定时器，每秒执行一次
+            clearInterval(timerInterval);  // 清除之前可能存在的定时器
+            timerInterval = setInterval(() => {
+                timeRemaining--;  // 剩余时间减1
+                updateStats();  // 更新统计数据
+                
+                // 如果时间到了
+                if (timeRemaining <= 0) {
+                    endTest();  // 结束测试
+                }
+            }, 1000);  // 1000毫秒 = 1秒
+        }
+
+        // 结束测试
+        function endTest() {
+            isRunning = false;  // 设置测试状态为未运行
+            clearInterval(timerInterval);  // 清除定时器
+            inputArea.disabled = true;  // 禁用输入框
+            
+            // 计算最终结果
+            const elapsedTime = (Date.now() - startTime) / 1000 / 60;  // 已用时间（分钟）
+            const finalWpmValue = elapsedTime > 0 ? Math.round(totalChars / elapsedTime) : 0;  // 最终WPM
+            const finalAccuracyValue = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;  // 最终准确率
+            
+            // 发送POST请求将测试结果保存到后端
+            fetch('/api/save-record', {
+                method: 'POST',  // 请求方法为POST
+                headers: { 'Content-Type': 'application/json' },  // 设置请求头为JSON格式
+                body: JSON.stringify({  // 请求体，JSON格式的测试结果
+                    wpm: finalWpmValue,
+                    accuracy: finalAccuracyValue,
+                    duration: selectedDuration
+                })
+            });
+            
+            // 显示测试完成结果弹窗
+            finalWpm.textContent = finalWpmValue;  // 显示最终WPM
+            finalAccuracy.textContent = `${finalAccuracyValue}%`;  // 显示最终准确率
+            resultModal.style.display = 'flex';  // 显示弹窗（flex布局居中）
+            
+            // 加载最新的历史记录
+            loadHistory();
+            
+            // 重置按钮状态
+            startBtn.disabled = false;  // 启用开始按钮
+            resetBtn.disabled = true;  // 禁用重置按钮
+        }
+
+        // 重置测试
+        function resetTest() {
+            isRunning = false;  // 设置测试状态为未运行
+            clearInterval(timerInterval);  // 清除定时器
+            inputArea.value = '';  // 清空输入框
+            inputArea.disabled = true;  // 禁用输入框
+            wpmElement.textContent = '0';  // 重置WPM显示
+            accuracyElement.textContent = '100%';  // 重置准确率显示
+            timeLeftElement.textContent = formatTime(selectedDuration);  // 重置剩余时间显示
+            startBtn.disabled = false;  // 启用开始按钮
+            resetBtn.disabled = true;  // 禁用重置按钮
+            testText = generateRandomText(200);  // 重新生成纯小写随机文本
+            currentIndex = 0;  // 重置当前输入位置
+            renderText();  // 重新渲染文本
+        }
+
+        // 加载历史记录
+        function loadHistory() {
+            // 发送GET请求从后端获取当前用户的最近10条历史记录
+            fetch('/api/get-history')
+                .then(res => res.json())  // 解析JSON格式的响应
+                .then(records => {  // 处理获取到的记录数据
+                    historyBody.innerHTML = '';  // 清空历史记录表格
+                    // 遍历每条记录
+                    records.forEach(r => {
+                        const row = document.createElement('tr');  // 创建表格行
+                        // 设置表格行的内容
+                        row.innerHTML = `
+                            <td>${r.timestamp}</td>
+                            <td>${r.duration / 60} min</td>
+                            <td>${r.wpm}</td>
+                            <td>${r.accuracy}%</td>
+                        `;
+                        historyBody.appendChild(row);  // 将表格行添加到表格主体
+                    });
+                });
+        }
+
+        // ==================== 事件监听 ====================
+        
+        // 开始按钮点击事件
+        startBtn.addEventListener('click', startTest);
+        // 重置按钮点击事件
+        resetBtn.addEventListener('click', resetTest);
+        
+        // 时长选择按钮点击事件
+        durationBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 移除所有时长选择按钮的active类
+                durationBtns.forEach(b => b.classList.remove('active'));
+                // 给当前点击的按钮添加active类
+                btn.classList.add('active');
+                // 更新选中的测试时长（从data-duration属性获取并转换为整数）
+                selectedDuration = parseInt(btn.dataset.duration);
+                // 更新剩余时间显示
+                timeLeftElement.textContent = formatTime(selectedDuration);
+            });
+        });
+
+        // 输入框输入事件
+        inputArea.addEventListener('input', () => {
+            if (!isRunning) return;  // 如果测试未运行，直接返回
+            
+            const typedText = inputArea.value;  // 获取已输入的文本
+            currentIndex = typedText.length;  // 更新当前输入位置
+            renderText();  // 重新渲染文本（更新颜色标记）
+            updateStats();  // 更新统计数据
+            
+            // 如果用户已经输完了所有测试文本
+            if (currentIndex >= testText.length) {
+                endTest();  // 提前结束测试
+            }
+        });
+
+        // 关闭弹窗按钮点击事件
+        closeModal.addEventListener('click', () => {
+            resultModal.style.display = 'none';  // 隐藏测试完成结果弹窗
+        });
+
+        // ==================== 页面初始化 ====================
+        testText = generateRandomText(200);  // 生成初始的纯小写随机文本
+        renderText();  // 渲染初始文本
+        loadHistory();  // 加载初始的历史记录
+    </script>
+</body>
+</html>

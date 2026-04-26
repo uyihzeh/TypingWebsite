@@ -1,0 +1,319 @@
+/* ==================== 全局样式重置 ==================== */
+/* 选择所有元素，清除默认的margin和padding，设置盒模型为border-box */
+* {
+    margin: 0;                    /* 清除外边距 */
+    padding: 0;                   /* 清除内边距 */
+    box-sizing: border-box;       /* 设置盒模型为border-box，padding和border包含在宽高内 */
+    font-family: 'Courier New', monospace;  /* 设置全局字体为等宽字体，适合打字测试 */
+}
+
+/* ==================== 页面主体样式 ==================== */
+body {
+    background-color: #1a1a2e;   /* 设置深色背景色 */
+    color: #eee;                  /* 设置浅色文字色，形成高对比度 */
+    min-height: 100vh;            /* 设置最小高度为视口高度，占满全屏 */
+    padding: 20px;                /* 设置页面内边距 */
+}
+
+/* ==================== 主容器样式 ==================== */
+.container {
+    max-width: 900px;             /* 设置最大宽度，避免在大屏幕上过宽 */
+    margin: 0 auto;               /* 水平居中 */
+}
+
+/* ==================== 头部区域样式 ==================== */
+.header {
+    display: flex;                /* 使用弹性布局 */
+    justify-content: space-between; /* 两端对齐，左边标题，右边用户信息 */
+    align-items: center;          /* 垂直居中 */
+    margin-bottom: 30px;          /* 底部外边距 */
+    padding-bottom: 20px;         /* 底部内边距 */
+    border-bottom: 1px solid #333; /* 底部边框，分隔头部和内容 */
+}
+
+.header h1 {
+    color: #00d9ff;               /* 设置标题颜色为亮青色 */
+}
+
+.user-info {
+    display: flex;                /* 使用弹性布局 */
+    align-items: center;          /* 垂直居中 */
+    gap: 20px;                    /* 元素之间的间距 */
+}
+
+/* ==================== 按钮通用样式 ==================== */
+.btn {
+    padding: 10px 20px;           /* 内边距 */
+    border: none;                  /* 清除默认边框 */
+    border-radius: 5px;            /* 圆角 */
+    cursor: pointer;               /* 鼠标悬停时显示手型 */
+    font-size: 16px;               /* 字体大小 */
+    transition: all 0.3s;          /* 所有属性变化时添加0.3秒的过渡动画 */
+}
+
+/* 主按钮样式（亮青色） */
+.btn-primary {
+    background-color: #00d9ff;    /* 亮青色背景 */
+    color: #1a1a2e;                /* 深色文字 */
+}
+
+.btn-primary:hover {
+    background-color: #00b8d4;    /* 鼠标悬停时颜色变深 */
+}
+
+/* 次要按钮样式（深灰色） */
+.btn-secondary {
+    background-color: #333;        /* 深灰色背景 */
+    color: #eee;                   /* 浅色文字 */
+}
+
+.btn-secondary:hover {
+    background-color: #444;        /* 鼠标悬停时颜色变浅 */
+}
+
+/* ==================== 认证页面容器样式 ==================== */
+.auth-container {
+    max-width: 400px;              /* 最大宽度 */
+    margin: 100px auto;            /* 上下外边距100px，水平居中 */
+    padding: 40px;                 /* 内边距 */
+    background-color: #16213e;    /* 深色背景 */
+    border-radius: 10px;           /* 圆角 */
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.1); /* 亮青色发光阴影效果 */
+}
+
+.auth-container h2 {
+    text-align: center;             /* 文字居中 */
+    margin-bottom: 30px;           /* 底部外边距 */
+    color: #00d9ff;                /* 亮青色 */
+}
+
+/* ==================== 表单组样式 ==================== */
+.form-group {
+    margin-bottom: 20px;           /* 底部外边距 */
+}
+
+.form-group label {
+    display: block;                 /* 块级元素，独占一行 */
+    margin-bottom: 8px;            /* 底部外边距 */
+    color: #aaa;                   /* 浅灰色文字 */
+}
+
+.form-group input {
+    width: 100%;                    /* 宽度100% */
+    padding: 12px;                 /* 内边距 */
+    border: 1px solid #333;        /* 深灰色边框 */
+    border-radius: 5px;            /* 圆角 */
+    background-color: #1a1a2e;    /* 深色背景 */
+    color: #eee;                   /* 浅色文字 */
+    font-size: 16px;               /* 字体大小 */
+}
+
+.form-group input:focus {
+    outline: none;                  /* 清除聚焦时的默认轮廓 */
+    border-color: #00d9ff;         /* 聚焦时边框变为亮青色 */
+}
+
+/* ==================== 错误信息样式 ==================== */
+.error {
+    color: #ff6b6b;                /* 红色文字 */
+    text-align: center;             /* 居中 */
+    margin-bottom: 20px;           /* 底部外边距 */
+}
+
+/* ==================== 认证页面链接样式 ==================== */
+.auth-link {
+    text-align: center;             /* 居中 */
+    margin-top: 20px;              /* 顶部外边距 */
+    color: #aaa;                   /* 浅灰色 */
+}
+
+.auth-link a {
+    color: #00d9ff;                /* 亮青色链接 */
+    text-decoration: none;          /* 清除下划线 */
+}
+
+/* ==================== 测试时长选择区域样式 ==================== */
+.settings {
+    display: flex;                /* 弹性布局 */
+    justify-content: center;      /* 水平居中 */
+    gap: 15px;                    /* 按钮间距 */
+    margin-bottom: 30px;          /* 底部外边距 */
+    flex-wrap: wrap;              /* 允许换行，适配小屏幕 */
+}
+
+.duration-btn {
+    padding: 12px 25px;           /* 内边距 */
+    border: 2px solid #333;        /* 深灰色边框 */
+    border-radius: 8px;            /* 圆角 */
+    background-color: transparent;  /* 透明背景 */
+    color: #eee;                   /* 浅色文字 */
+    font-size: 16px;               /* 字体大小 */
+    cursor: pointer;               /* 手型光标 */
+    transition: all 0.3s;          /* 过渡动画 */
+}
+
+.duration-btn:hover, .duration-btn.active {
+    border-color: #00d9ff;         /* 悬停或激活时边框变为亮青色 */
+    background-color: rgba(0, 217, 255, 0.1); /* 亮青色半透明背景 */
+}
+
+/* ==================== 统计数据显示区域样式 ==================== */
+.stats {
+    display: flex;                /* 弹性布局 */
+    justify-content: space-around; /* 均匀分布 */
+    margin-bottom: 30px;          /* 底部外边距 */
+    padding: 20px;                /* 内边距 */
+    background-color: #16213e;    /* 深色背景 */
+    border-radius: 10px;           /* 圆角 */
+}
+
+.stat-item {
+    text-align: center;             /* 居中 */
+}
+
+.stat-label {
+    color: #aaa;                   /* 浅灰色标签 */
+    font-size: 14px;               /* 小字体 */
+    margin-bottom: 5px;            /* 底部外边距 */
+}
+
+.stat-value {
+    font-size: 36px;               /* 大字体数值 */
+    font-weight: bold;              /* 粗体 */
+    color: #00d9ff;                /* 亮青色 */
+}
+
+/* ==================== 待输入文本显示区域样式 ==================== */
+.text-display {
+    font-size: 24px;               /* 大字体 */
+    line-height: 1.8;              /* 行高 */
+    margin-bottom: 20px;          /* 底部外边距 */
+    padding: 30px;                /* 内边距 */
+    background-color: #16213e;    /* 深色背景 */
+    border-radius: 10px;           /* 圆角 */
+    letter-spacing: 2px;           /* 字母间距，方便阅读 */
+    word-wrap: break-word;         /* 长单词自动换行 */
+}
+
+/* 单个字符的基础样式 */
+.char {
+    position: relative;             /* 相对定位 */
+}
+
+/* 正确输入的字符样式 */
+.char.correct {
+    color: #00ff88;                /* 绿色 */
+}
+
+/* 错误输入的字符样式 */
+.char.incorrect {
+    color: #ff6b6b;                /* 红色 */
+    background-color: rgba(255, 107, 107, 0.2); /* 红色半透明背景 */
+}
+
+/* 当前待输入的字符样式 */
+.char.current {
+    background-color: rgba(0, 217, 255, 0.3); /* 亮青色半透明背景 */
+    border-bottom: 2px solid #00d9ff; /* 底部亮青色边框 */
+}
+
+/* ==================== 输入框样式 ==================== */
+.input-area {
+    width: 100%;                    /* 宽度100% */
+    height: 120px;                 /* 固定高度 */
+    font-size: 20px;               /* 字体大小 */
+    padding: 15px;                /* 内边距 */
+    border: 2px solid #333;        /* 深灰色边框 */
+    border-radius: 10px;           /* 圆角 */
+    background-color: #1a1a2e;    /* 深色背景 */
+    color: #eee;                   /* 浅色文字 */
+    resize: none;                   /* 禁止调整大小 */
+    margin-bottom: 20px;          /* 底部外边距 */
+    letter-spacing: 2px;           /* 字母间距 */
+}
+
+.input-area:focus {
+    outline: none;                  /* 清除聚焦时的默认轮廓 */
+    border-color: #00d9ff;         /* 聚焦时边框变为亮青色 */
+}
+
+.input-area:disabled {
+    opacity: 0.5;                   /* 禁用时半透明 */
+}
+
+/* ==================== 控制按钮区域样式 ==================== */
+.controls {
+    display: flex;                /* 弹性布局 */
+    justify-content: center;      /* 水平居中 */
+    gap: 20px;                    /* 按钮间距 */
+    margin-bottom: 40px;          /* 底部外边距 */
+}
+
+/* ==================== 历史记录区域样式 ==================== */
+.history-section {
+    margin-top: 40px;              /* 顶部外边距 */
+    padding-top: 30px;             /* 顶部内边距 */
+    border-top: 1px solid #333;    /* 顶部边框 */
+}
+
+.history-section h3 {
+    margin-bottom: 20px;           /* 底部外边距 */
+    color: #00d9ff;                /* 亮青色 */
+}
+
+/* 历史记录表格样式 */
+.history-table {
+    width: 100%;                    /* 宽度100% */
+    border-collapse: collapse;      /* 边框合并 */
+}
+
+.history-table th, .history-table td {
+    padding: 12px;                /* 内边距 */
+    text-align: left;               /* 左对齐 */
+    border-bottom: 1px solid #333; /* 底部边框 */
+}
+
+.history-table th {
+    color: #00d9ff;                /* 表头亮青色 */
+}
+
+/* ==================== 测试完成结果弹窗样式 ==================== */
+.modal {
+    display: none;                  /* 默认隐藏 */
+    position: fixed;                /* 固定定位 */
+    top: 0;                         /* 顶部对齐 */
+    left: 0;                        /* 左侧对齐 */
+    width: 100%;                    /* 宽度100% */
+    height: 100%;                   /* 高度100% */
+    background-color: rgba(0, 0, 0, 0.8); /* 黑色半透明背景 */
+    justify-content: center;        /* 水平居中 */
+    align-items: center;            /* 垂直居中 */
+    z-index: 1000;                  /* 高层级，确保在最上层 */
+}
+
+.modal-content {
+    background-color: #16213e;    /* 深色背景 */
+    padding: 40px;                 /* 内边距 */
+    border-radius: 10px;           /* 圆角 */
+    text-align: center;             /* 居中 */
+    max-width: 400px;              /* 最大宽度 */
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;           /* 底部外边距 */
+    color: #00d9ff;                /* 亮青色 */
+}
+
+.modal-stats {
+    margin: 30px 0;                /* 上下外边距 */
+}
+
+.modal-stat {
+    margin-bottom: 15px;           /* 底部外边距 */
+}
+
+.modal-stat span {
+    font-size: 24px;               /* 大字体 */
+    font-weight: bold;              /* 粗体 */
+    color: #00d9ff;                /* 亮青色 */
+}
